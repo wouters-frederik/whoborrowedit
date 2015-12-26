@@ -7,8 +7,8 @@ $(function() {
   Parse.$ = jQuery;
 
   // Initialize Parse with your Parse application javascript keys
-  Parse.initialize("your-application-id",
-                   "your-javascript-key");
+  Parse.initialize("hqICxWB0LeqgDUqtpGeHLHnYj6bOzdiTuDLvAK0Y",
+                   "bQuAiSX0XYQBkhPsVF6alX0rJLoQYvSHKFmcX86N");
 
   // Todo Model
   // ----------
@@ -18,7 +18,8 @@ $(function() {
     // Default attributes for the todo.
     defaults: {
       content: "empty todo...",
-      done: false
+      borrowedTo: "My sister",
+      returned: false
     },
 
     // Ensure that each todo created has `content`.
@@ -30,7 +31,7 @@ $(function() {
 
     // Toggle the `done` state of this todo item.
     toggle: function() {
-      this.save({done: !this.get("done")});
+      this.save({returned: !this.get("returned")});
     }
   });
 
@@ -50,13 +51,13 @@ $(function() {
     model: Todo,
 
     // Filter down the list of all todo items that are finished.
-    done: function() {
-      return this.filter(function(todo){ return todo.get('done'); });
+    returned: function() {
+      return this.filter(function(todo){ return todo.get('returned'); });
     },
 
     // Filter down the list to only todo items that are still not finished.
     remaining: function() {
-      return this.without.apply(this, this.done());
+      return this.without.apply(this, this.returned());
     },
 
     // We keep the Todos in sequential order, despite being saved by unordered
@@ -87,7 +88,7 @@ $(function() {
 
     // The DOM events specific to an item.
     events: {
-      "click .toggle"              : "toggleDone",
+      "click .toggle"              : "toggleReturned",
       "dblclick label.todo-content" : "edit",
       "click .todo-destroy"   : "clear",
       "keypress .edit"      : "updateOnEnter",
@@ -111,7 +112,7 @@ $(function() {
     },
 
     // Toggle the `"done"` state of the model.
-    toggleDone: function() {
+    toggleReturned: function() {
       this.model.toggle();
     },
 
@@ -150,7 +151,7 @@ $(function() {
 
     // Delegated events for creating new items, and clearing completed ones.
     events: {
-      "keypress #new-todo":  "createOnEnter",
+      "keypress #new-to":  "createOnEnter",
       "click #clear-completed": "clearCompleted",
       "click #toggle-all": "toggleAllComplete",
       "click .log-out": "logOut",
@@ -201,12 +202,12 @@ $(function() {
     // Re-rendering the App just means refreshing the statistics -- the rest
     // of the app doesn't change.
     render: function() {
-      var done = this.todos.done().length;
+      var returned = this.todos.returned().length;
       var remaining = this.todos.remaining().length;
 
       this.$('#todo-stats').html(this.statsTemplate({
         total:      this.todos.length,
-        done:       done,
+        returned:       returned,
         remaining:  remaining
       }));
 
@@ -230,9 +231,9 @@ $(function() {
       if (filterValue === "all") {
         this.addAll();
       } else if (filterValue === "completed") {
-        this.addSome(function(item) { return item.get('done') });
+        this.addSome(function(item) { return item.get('returned') });
       } else {
-        this.addSome(function(item) { return !item.get('done') });
+        this.addSome(function(item) { return !item.get('returned') });
       }
     },
 
@@ -269,33 +270,36 @@ $(function() {
       if (e.keyCode != 13) return;
 
       this.todos.create({
-        content: this.input.val(),
+        content: $('#new-todo').val(),
+	borrowedTo: $('#new-to').val(),
         order:   this.todos.nextOrder(),
-        done:    false,
+        returned:    false,
         user:    Parse.User.current(),
         ACL:     new Parse.ACL(Parse.User.current())
       });
 
       this.input.val('');
+      $('#new-to').val('');
       this.resetFilters();
     },
 
     // Clear all done todo items, destroying their models.
     clearCompleted: function() {
-      _.each(this.todos.done(), function(todo){ todo.destroy(); });
+      _.each(this.todos.returned(), function(todo){ todo.destroy(); });
       return false;
     },
 
     toggleAllComplete: function () {
-      var done = this.allCheckbox.checked;
-      this.todos.each(function (todo) { todo.save({'done': done}); });
+      var returned = this.allCheckbox.checked;
+      this.todos.each(function (todo) { todo.save({'returned': returned}); });
     }
   });
 
   var LogInView = Parse.View.extend({
     events: {
       "submit form.login-form": "logIn",
-      "submit form.signup-form": "signUp"
+      "submit form.signup-form": "signUp",
+	"click #fblogin" : "fbLogin"
     },
 
     el: ".content",
@@ -326,6 +330,41 @@ $(function() {
       this.$(".login-form button").attr("disabled", "disabled");
 
       return false;
+    },
+
+
+    fbLogin: function(e) {
+	Parse.FacebookUtils.logIn(null, {
+	  success: function(user) {
+	    if (!user.existed()) {
+		console.log('for new users');
+		FB.api('/me?fields=first_name,last_name,email', function (response) { 
+                 	var user = new Parse.User(); 
+			user.set("facebook_id", response.id);
+                    	user.set("facebook_link", response.link);
+                    	user.setEmail(response.email);
+                 	user.set("lastname", response.last_name); 
+                 	user.set("firstname", response.first_name); 
+                 	user.set("email", response.email);
+			user.save().then(function () {
+                        	//go to new page
+				console.log(user);
+                    	});;
+             	}); 	
+		new ManageTodosView();
+          	self.undelegateEvents();
+          	delete self;
+	    } else {
+	        new ManageTodosView();
+                self.undelegateEvents();
+                delete self;
+	    }
+	  },
+	  error: function(user, error) {
+	    alert("User cancelled the Facebook login or did not fully authorize.");
+	  }
+	});
+
     },
 
     signUp: function(e) {

@@ -35,7 +35,7 @@ body {
 #todoapp {
     background: #fff;
     background: rgba(255, 255, 255, 0.9);
-    margin: 130px 0 40px 0;
+    margin: 30px 0 40px 0;
     border: 1px solid #ccc;
     position: relative;
     border-top-left-radius: 2px;
@@ -66,10 +66,9 @@ body {
 }
 
 #todoapp h1 {
-    position: absolute;
-    top: -120px;
+       white-space: nowrap;
     width: 100%;
-    font-size: 70px;
+    font-size: 30px;
     font-weight: bold;
     text-align: center;
     color: #888;
@@ -135,13 +134,27 @@ body {
     -o-font-smoothing: antialiased;
     font-smoothing: antialiased;
 }
-
+#new-to,
 #new-todo {
     padding: 16px 16px 16px 60px;
     border: none;
     background: rgba(0, 0, 0, 0.02);
     z-index: 2;
     box-shadow: none;
+}
+#new-todo{
+	width:49%;
+}
+#new-to{
+position: relative;
+    margin: 0;
+    width: 30%;
+    font-size: 24px;
+    font-family: inherit;
+    line-height: 1.4em;
+    border: 0;
+    outline: none;
+    color: inherit;
 }
 
 #main {
@@ -302,6 +315,11 @@ label[for='toggle-all'] {
 
 #todo-list li:hover .todo-destroy {
     display: block;
+}
+
+#todo-list li .borrowedTo{
+	color:lightgray;
+	font-size:0.8em;
 }
 
 #todo-list li .edit {
@@ -467,4 +485,6 @@ label[for='toggle-all'] {
 #credits a {
     color: #888;
 }
-
+.fb-share-button{
+	vertical-align:top;
+}

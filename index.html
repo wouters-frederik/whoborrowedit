@@ -2,7 +2,15 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Parse JavaScript Todo App</title>
+    <title>Keep track of your stuff! - Whoborrowed.it</title>
+
+<meta property="fb:app_id" content="417422225034310" /> 
+<meta property="og:title" content="Keep track of your stuff - Who borrowed.it" />
+<meta property="og:type" content="website" />
+<meta property="og:description" content="Keep track of your stuff - Who borrowed.it keeps track of the stuff you otherwise would forget" />
+<meta property="og:url" content="http://whoborrowedit.airbird.be/" />
+<meta property="og:image" content="http://whoborrowedit.airbird.be/ribbon.jpg" />
+
     <link href="css/todos.css" media="all" rel="stylesheet" type="text/css"/>
     <script src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
     <script src="js/underscore.js"></script>
@@ -10,13 +18,30 @@
     <script src="js/todos.js"></script>
   </head>
 
+<script>
+  window.fbAsyncInit = function() {
+    Parse.FacebookUtils.init({
+      appId      : '417422225034310',
+      xfbml      : true,
+      version    : 'v2.5'
+    });
+  };
+
+  (function(d, s, id){
+     var js, fjs = d.getElementsByTagName(s)[0];
+     if (d.getElementById(id)) {return;}
+     js = d.createElement(s); js.id = id;
+     js.src = "//connect.facebook.net/en_US/sdk.js";
+     fjs.parentNode.insertBefore(js, fjs);
+   }(document, 'script', 'facebook-jssdk'));
+</script>
   <body>
 
     <!-- Todo App Interface -->
 
     <div id="todoapp">
       <div class="title">
-        <h1>Parse Todos</h1>
+        <h1>Who Borrowed.it</h1>
       </div>
 
       <div class="content">
@@ -24,9 +49,11 @@
     </div>
 
     <div id="credits">
-      Powered by <a href="https://www.parse.com">Parse</a> using the <a href="https://www.parse.com/docs/js_guide">JavaScript SDK</a>.<br /><br />
-      Learn how we built it in the <a href='https://parse.com/tutorials/todo-app-with-javascript'>tutorial</a>.
-    </div>
+    	<div class="fb-share-button" data-href="http://whoborrowedit.airbird.be/" data-layout="button"></div> 
+	&nbsp;&nbsp;&nbsp;
+	<a href="https://twitter.com/share" class="twitter-share-button"{count} data-url="http://whoborrowedit.airbird.be/" data-text="keep track of your stuff" >Tweet</a>
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
+	</div>
 
     <!-- Templates -->
 
@@ -40,6 +67,7 @@
           <input type="password" id="login-password" placeholder="Password" />
           <button>Log In</button>
         </form>
+	<a href="javascript://" class="" id="fblogin">Log in with facebook</a>
 
         <form class="signup-form">
           <h2>Sign Up</h2>
@@ -53,13 +81,14 @@
 
     <script type="text/template" id="manage-todos-template">
       <div id="user-info">
-        Signed in as <%= Parse.User.current().escape("username") %> (<a href="#" class="log-out">Log out</a>)
+        <!--Signed in as <%= Parse.User.current().escape("username") %> --><a href="#" class="log-out">Log me out</a>
       </div>
 
       <div class="section">
 
         <header id="header">
-          <input id="new-todo" placeholder="What needs to be done?" type="text" />
+          <input id="new-todo" placeholder="What did you lent" type="text" />
+          <input id="new-to" placeholder="to whom?" type="text" />
         </header>
 
         <div id="main">
@@ -76,10 +105,10 @@
     </script>
 
     <script type="text/template" id="item-template">
-      <li class="<%= done ? 'completed' : '' %>">
+      <li class="<%= returned ? 'returned' : '' %>">
 	<div class="view">
-	  <input class="toggle" type="checkbox" <%= done ? 'checked="checked"' : '' %>>
-	  <label class="todo-content"><%= _.escape(content) %></label>
+	  <input class="toggle" type="checkbox" <%= returned ? 'checked="checked"' : '' %>>
+	  <label class="todo-content"><%= _.escape(content) %> <span class="borrowedTo"> - <%= _.escape(borrowedTo) %></span></label>
 	  <button class="todo-destroy"></button>
 	</div>
 	<input class="edit" value="<%= _.escape(content) %>">
@@ -94,13 +123,13 @@
 	    <a href="javascript:void(0)" id="all" class="selected">All</a>
 	  </li>
 	  <li>
-	    <a href="javascript:void(0)" id="active">Active</a>
+	    <a href="javascript:void(0)" id="notreturned">Not returned</a>
 	  </li>
 	  <li>
-	    <a href="javascript:void(0)" id="completed">Completed</a>
+	    <a href="javascript:void(0)" id="returned">Returned</a>
 	  </li>
 	</ul>
-	<button id="clear-completed">Clear completed (<%= done %>)</button>
+	<button id="clear-completed">Clear returned (<%= returned %>)</button>
       </footer>
     </script>
 
